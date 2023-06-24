@@ -21,7 +21,7 @@
                   aria-describedby="button-addon2"
                 />
                 <button
-                  @click="obtenerPokemon"
+                  @click="obtenerPokemon(search)"
                   class="btn btn-success"
                   type="button"
                   id="btnEnviar"
@@ -49,7 +49,7 @@
                   <h5 class="card-title">Nombre: {{pokemon.name}}</h5>
                   <p class="card-text"><strong>Id:</strong> {{pokemon.id}}</p>
                   <p class="card-text"><strong>Movimientos:</strong> {{movimientos.join(', ')}}</p>
-                  <p class="card-text"><strong>Habilidades:</strong></p>
+                  <p class="card-text"><strong>Habilidades:</strong> {{habilidades.join(', ')}}</p>
                 </div>
               </div>
             </div>
@@ -66,6 +66,7 @@
 </template>
 
 <script>
+import {mapActions, mapState} from 'vuex'
 export default {
   name: "buscador-component",
   // props: {},
@@ -73,11 +74,11 @@ export default {
     return {
       //Se captura el input ingresado por el usuario y se guarda en la data "search"
       search: "pikachu",
-      //Se define null inicialmente para que no se caiga la página mientras se espera la petición a la API
-      pokemon: null,
     };
   },
   computed: {
+    //Se recibe el state "pokemon" que viene nulo
+    ...mapState(['pokemon']),
     //Se realiza el método img en la propiedad coputada para renderizar en un sólo término el link de la imagen
     img(){
         if (this.pokemon!==null) {
@@ -92,23 +93,32 @@ export default {
             return this.pokemon.moves.map(move => move.move.name);
         }
         return[];
+    },
+    //computada que retorna las habilidades de los pokemon.
+    habilidades(){
+      if (this.pokemon) {
+        return this.pokemon.abilities.map(ability => ability.ability.name);
+        }
+        return[];
     }
   },
   methods: {
-    obtenerPokemon() {
-      //Guardian que muestra una alerta avisando al usuario que ingrese un id o nombre
-      if (this.search == "") {
-        alert("campo vacío. Ingrese el Id o Nombre del pokemón");
-        return;
-      }
-      //fetch("https://pokeapi.co/api/v2/pokemon/`this.search`")
-      fetch("https://pokeapi.co/api/v2/pokemon/" + this.search)
-        .then((resp) => resp.json())
-        .then((json) => {
-          this.pokemon = json;
-          console.log(this.pokemon);
-        });
-    },
+    //Se llama a la acción "obtenerPokemon"
+    ...mapActions(['obtenerPokemon'])
+    // getPokemon() {
+    //   //Guardian que muestra una alerta avisando al usuario que ingrese un id o nombre
+    //   if (this.search == "") {
+    //     alert("campo vacío. Ingrese el Id o Nombre del pokemón");
+    //     return;
+    //   }
+    //   //fetch("https://pokeapi.co/api/v2/pokemon/`this.search`")
+    //   fetch("https://pokeapi.co/api/v2/pokemon/" + this.search)
+    //     .then((resp) => resp.json())
+    //     .then((json) => {
+    //       this.pokemon = json;
+    //       console.log(this.pokemon);
+    //     });
+    // },
   },
   // watch: {},
   // components: {},
@@ -118,7 +128,7 @@ export default {
   //Para  que la info de pikachu se muestre al momento de cargar la pag se utiliza el ciclo "created"
   created(){
     //Se ejecuta obtenerPokemon() con la variable de contexto "this"
-    this.obtenerPokemon()
+    this.obtenerPokemon(this.search)
   }
   // -- End Lifecycle Methods
 };
